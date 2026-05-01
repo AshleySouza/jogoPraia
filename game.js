@@ -5,6 +5,7 @@
     const DAY_DURATION_SECONDS = 90;
     const MESSAGE_START_SECONDS = 300;
     const MESSAGE_END_SECONDS = 307;
+    const IMMUNITY_DURATION_SECONDS = 7;
     const WIN_TIME_SECONDS = 600;
     const START_X = 128;
 
@@ -65,6 +66,8 @@
             ultimoObstaculoVoador: 0,
             mostrandoMensagem: false,
             tempoMensagem: 0,
+            imuneAte: 0,
+            mensagem5MinAtivada: false,
             somDedosTocado: false
         };
     }
@@ -111,6 +114,14 @@
         return jogadora.abaixando && !jogadora.pulando ? jogadora.alturaAgachada : jogadora.altura;
     }
 
+    function tempoRestanteImunidade() {
+        return Math.max(0, estado.imuneAte - Date.now());
+    }
+
+    function estaImune() {
+        return tempoRestanteImunidade() > 0;
+    }
+
     function baseAtualJogadora() {
         return jogadora.y + alturaAtualJogadora();
     }
@@ -148,6 +159,8 @@
         estado.ultimoObstaculoVoador = 0;
         estado.mostrandoMensagem = false;
         estado.tempoMensagem = 0;
+        estado.imuneAte = 0;
+        estado.mensagem5MinAtivada = false;
         estado.somDedosTocado = false;
         resetarJogadora();
         ui.startScreen.classList.add('hidden');
@@ -595,9 +608,13 @@
         ui.bestScore.textContent = `Recorde: ${estado.melhorPontuacao}`;
         ui.time.textContent = `Tempo: ${formatarTempo(estado.tempoDecorrido)}`;
         ui.mode.textContent = `Modo: ${estado.modoDia ? 'Dia' : 'Noite'}`;
-        ui.status.textContent = estado.gameOver && estado.venceu
-            ? 'Resultado: Vitoria'
-            : `Meta: ${formatarTempo(WIN_TIME_SECONDS)}`;
+        if (estado.gameOver && estado.venceu) {
+            ui.status.textContent = 'Resultado: Vitoria';
+        } else if (estaImune()) {
+            ui.status.textContent = `Imune: ${formatarTempo(Math.ceil(tempoRestanteImunidade() / 1000))}`;
+        } else {
+            ui.status.textContent = `Meta: ${formatarTempo(WIN_TIME_SECONDS)}`;
+        }
     }
 
     function atualizar() {
@@ -614,11 +631,19 @@
 
         estado.velocidade = 4.4 + Math.floor(estado.tempoDecorrido / 45) * 0.7;
 
-        if (estado.tempoDecorrido > MESSAGE_START_SECONDS && estado.tempoDecorrido < MESSAGE_END_SECONDS) {
+        if (!estado.mensagem5MinAtivada && estado.tempoDecorrido >= MESSAGE_START_SECONDS) {
+            estado.mensagem5MinAtivada = true;
             estado.mostrandoMensagem = true;
-            estado.tempoMensagem = MESSAGE_END_SECONDS - estado.tempoDecorrido;
-        } else if (estado.tempoDecorrido >= MESSAGE_END_SECONDS) {
-            estado.mostrandoMensagem = false;
+            estado.tempoMensagem = IMMUNITY_DURATION_SECONDS;
+            estado.imuneAte = Date.now() + (IMMUNITY_DURATION_SECONDS * 1000);
+        }
+
+        if (estado.mostrandoMensagem) {
+            estado.tempoMensagem = Math.max(0, (estado.imuneAte - Date.now()) / 1000);
+            if (estado.tempoDecorrido >= MESSAGE_END_SECONDS || !estaImune()) {
+                estado.mostrandoMensagem = false;
+                estado.tempoMensagem = 0;
+            }
         }
 
         if (estado.tempoDecorrido > 240 && !estado.somDedosTocado) {
@@ -689,18 +714,20 @@
         }
 
         const hitboxJogadora = limitesJogadora();
-        for (const esc of estado.escorpioes) {
-            if (colidiu(hitboxJogadora, esc)) {
-                encerrarJogo();
-                break;
-            }
-        }
-
-        if (!estado.gameOver) {
-            for (const obs of estado.obstaculosVoadores) {
-                if (colidiu(hitboxJogadora, obs)) {
+        if (!estaImune()) {
+            for (const esc of estado.escorpioes) {
+                if (colidiu(hitboxJogadora, esc)) {
                     encerrarJogo();
                     break;
+                }
+            }
+
+            if (!estado.gameOver) {
+                for (const obs of estado.obstaculosVoadores) {
+                    if (colidiu(hitboxJogadora, obs)) {
+                        encerrarJogo();
+                        break;
+                    }
                 }
             }
         }
@@ -710,29 +737,6 @@
         }
 
         atualizarUI();
-    }
-
-    function desenharMensagemEspecial() {
-        if (!estado.mostrandoMensagem) {
-            return;
-        }
-
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        ctx.fillRect(100, 80, 600, 80);
-
-        ctx.strokeStyle = '#FF69B4';
-        ctx.lineWidth = 3;
-        ctx.strokeRect(100, 80, 600, 80);
-
-        ctx.fillStyle = '#FFF';
-        ctx.font = 'bold 28px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText('"Estou confusa sobre nos..."', canvas.width / 2, 115);
-
-        const segundosRestantes = Math.ceil(estado.tempoMensagem);
-        ctx.font = '20px Arial';
-        ctx.fillText(`Contagem: ${segundosRestantes}s`, canvas.width / 2, 145);
-        ctx.textAlign = 'left';
     }
 
     function desenharTrofeuVitoria() {
@@ -774,6 +778,28 @@
         ctx.fill();
 
         ctx.restore();
+    }
+
+    function desenharMensagemEspecial() {
+        if (!estado.mostrandoMensagem) {
+            return;
+        }
+
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.72)';
+        ctx.fillRect(110, 76, 580, 92);
+
+        ctx.strokeStyle = '#FF69B4';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(110, 76, 580, 92);
+
+        ctx.fillStyle = '#FFF';
+        ctx.font = 'bold 26px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('"Estou confusa sobre nos..."', canvas.width / 2, 112);
+
+        ctx.font = 'bold 20px Arial';
+        ctx.fillText(`Imune por ${Math.ceil(estado.tempoMensagem)}s`, canvas.width / 2, 144);
+        ctx.textAlign = 'left';
     }
 
     function desenhar() {
@@ -859,6 +885,8 @@
         pular,
         abaixar,
         iniciarJogo,
+        estaImune,
+        tempoRestanteImunidade,
         formatarTempo,
         atualizarMelhorPontuacao,
         resetarJogadora,

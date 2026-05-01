@@ -206,6 +206,32 @@ function testCollisionEndsGame() {
     assert.strictEqual(api.estado.gameOver, true, 'sem imunidade a colisao deve encerrar o jogo');
 }
 
+function testFiveMinuteMessageAndImmunity() {
+    const { api, elements, setNow } = loadGame();
+    api.iniciarJogo();
+
+    setNow(api.estado.tempoInicio + 300_000);
+    api.atualizar();
+
+    assert.strictEqual(api.estado.mostrandoMensagem, true, 'a mensagem deve aparecer aos 5 minutos');
+    assert.strictEqual(api.estaImune(), true, 'a imunidade deve ativar aos 5 minutos');
+    assert.match(elements.get('status').textContent, /Imune:/, 'UI deve mostrar a contagem de imunidade');
+
+    api.estado.escorpioes.push({
+        x: api.jogadora.x,
+        y: api.jogadora.y,
+        largura: 50,
+        altura: 35
+    });
+    api.atualizar();
+    assert.strictEqual(api.estado.gameOver, false, 'durante a imunidade a colisao nao deve encerrar o jogo');
+
+    setNow(api.estado.tempoInicio + 308_000);
+    api.atualizar();
+    assert.strictEqual(api.estado.mostrandoMensagem, false, 'a mensagem deve sumir depois da contagem');
+    assert.strictEqual(api.estaImune(), false, 'a imunidade deve acabar apos 7 segundos');
+}
+
 function testBestScorePersistence() {
     const { api, elements, storage } = loadGame();
     api.iniciarJogo();
@@ -277,6 +303,7 @@ function testWinConditionAtTenMinutes() {
 
 function run() {
     testCollisionEndsGame();
+    testFiveMinuteMessageAndImmunity();
     testBestScorePersistence();
     testJumpAndDuckControls();
     testStageAdvancesWhileAvatarStaysStable();

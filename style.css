@@ -161,11 +161,36 @@ body {
 
 @media (max-width: 768px) {
     body {
+        justify-content: flex-start;
         align-items: flex-start;
+        padding: 12px;
+    }
+
+    .game-container {
+        width: 100%;
+        max-width: 100%;
+        overflow: visible;
+        border-radius: 18px;
+    }
+
+    #gameCanvas {
+        border-radius: 18px;
     }
 
     #ui {
+        top: 8px;
+        left: 8px;
+        right: 8px;
         font-size: 14px;
+    }
+
+    #score,
+    #bestScore,
+    #time,
+    #mode,
+    #status {
+        padding: 6px 10px;
+        border-radius: 14px;
     }
 
     #gameOver h1,
@@ -179,11 +204,12 @@ body {
     }
 
     .mobile-controls {
-        display: flex;
-        left: 12px;
-        right: 12px;
-        bottom: 12px;
+        position: static;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
         gap: 10px;
+        margin-top: 12px;
+        pointer-events: auto;
     }
 
     .mobile-controls button {
@@ -194,6 +220,15 @@ body {
 }
 
 @media (max-width: 480px) {
+    body {
+        padding: 10px;
+    }
+
+    #ui {
+        gap: 6px;
+        font-size: 12px;
+    }
+
     .mobile-controls button {
         min-height: 64px;
         padding: 16px 14px;
