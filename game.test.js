@@ -210,11 +210,11 @@ function testFiveMinuteMessageAndImmunity() {
     const { api, elements, setNow } = loadGame();
     api.iniciarJogo();
 
-    setNow(api.estado.tempoInicio + 300_000);
+    setNow(api.estado.tempoInicio + 120_000);
     api.atualizar();
 
-    assert.strictEqual(api.estado.mostrandoMensagem, true, 'a mensagem deve aparecer aos 5 minutos');
-    assert.strictEqual(api.estaImune(), true, 'a imunidade deve ativar aos 5 minutos');
+    assert.strictEqual(api.estado.mostrandoMensagem, true, 'a mensagem deve aparecer aos 2 minutos');
+    assert.strictEqual(api.estaImune(), true, 'a imunidade deve ativar aos 2 minutos');
     assert.match(elements.get('status').textContent, /Imune:/, 'UI deve mostrar a contagem de imunidade');
 
     api.estado.escorpioes.push({
@@ -226,10 +226,40 @@ function testFiveMinuteMessageAndImmunity() {
     api.atualizar();
     assert.strictEqual(api.estado.gameOver, false, 'durante a imunidade a colisao nao deve encerrar o jogo');
 
-    setNow(api.estado.tempoInicio + 308_000);
+    setNow(api.estado.tempoInicio + 128_000);
     api.atualizar();
     assert.strictEqual(api.estado.mostrandoMensagem, false, 'a mensagem deve sumir depois da contagem');
     assert.strictEqual(api.estaImune(), false, 'a imunidade deve acabar apos 7 segundos');
+}
+
+function testPowerUpImmunityLastsTenSeconds() {
+    const { api, setNow } = loadGame();
+    api.iniciarJogo();
+
+    api.estado.poderes.push({
+        x: api.jogadora.x,
+        y: api.jogadora.y,
+        largura: 32,
+        altura: 32
+    });
+
+    setNow(api.estado.tempoInicio + 30_000);
+    api.atualizar();
+
+    assert.strictEqual(api.estaImune(), true, 'coletar o poder deve ativar imunidade');
+
+    api.estado.escorpioes.push({
+        x: api.jogadora.x,
+        y: api.jogadora.y,
+        largura: 50,
+        altura: 35
+    });
+    api.atualizar();
+    assert.strictEqual(api.estado.gameOver, false, 'durante a imunidade do poder a colisao nao deve encerrar o jogo');
+
+    setNow(api.estado.tempoInicio + 41_000);
+    api.atualizar();
+    assert.strictEqual(api.estaImune(), false, 'a imunidade do poder deve acabar apos 10 segundos');
 }
 
 function testBestScorePersistence() {
@@ -304,6 +334,7 @@ function testWinConditionAtTenMinutes() {
 function run() {
     testCollisionEndsGame();
     testFiveMinuteMessageAndImmunity();
+    testPowerUpImmunityLastsTenSeconds();
     testBestScorePersistence();
     testJumpAndDuckControls();
     testStageAdvancesWhileAvatarStaysStable();

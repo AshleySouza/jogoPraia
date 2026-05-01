@@ -3,11 +3,19 @@
     const GROUND_Y = 300;
     const DUCK_Y = 340;
     const DAY_DURATION_SECONDS = 90;
-    const MESSAGE_START_SECONDS = 300;
+    const MESSAGE_START_SECONDS = 120;
     const MESSAGE_END_SECONDS = 307;
-    const IMMUNITY_DURATION_SECONDS = 7;
+    const MESSAGE_IMMUNITY_DURATION_SECONDS = 7;
+    const POWER_IMMUNITY_DURATION_SECONDS = 10;
     const WIN_TIME_SECONDS = 600;
     const START_X = 128;
+    const POWERUP_INTERVAL_MIN_MS = 24000;
+    const POWERUP_INTERVAL_RANDOM_MS = 9000;
+    const NIGHT_SCORPION_INTERVAL_MIN_MS = 1950;
+    const NIGHT_SCORPION_INTERVAL_RANDOM_MS = 1000;
+    const NIGHT_BAT_INTERVAL_MIN_MS = 3000;
+    const NIGHT_BAT_INTERVAL_RANDOM_MS = 1500;
+    const NIGHT_OBSTACLE_GAP_MS = 1100;
 
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
@@ -62,8 +70,10 @@
             distancia: 0,
             escorpioes: [],
             obstaculosVoadores: [],
+            poderes: [],
             ultimoEscorpiao: 0,
             ultimoObstaculoVoador: 0,
+            ultimoPoder: 0,
             mostrandoMensagem: false,
             tempoMensagem: 0,
             imuneAte: 0,
@@ -155,8 +165,10 @@
         estado.distancia = 0;
         estado.escorpioes = [];
         estado.obstaculosVoadores = [];
+        estado.poderes = [];
         estado.ultimoEscorpiao = 0;
         estado.ultimoObstaculoVoador = 0;
+        estado.ultimoPoder = 0;
         estado.mostrandoMensagem = false;
         estado.tempoMensagem = 0;
         estado.imuneAte = 0;
@@ -419,6 +431,29 @@
         ctx.fill();
     }
 
+    function desenharPoderImunidade(poder) {
+        const x = poder.x;
+        const y = poder.y;
+
+        ctx.fillStyle = '#7fffd4';
+        ctx.beginPath();
+        ctx.arc(x + 16, y + 16, 16, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(x + 16, y + 16, 10, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(x + 16, y + 8);
+        ctx.lineTo(x + 16, y + 24);
+        ctx.moveTo(x + 8, y + 16);
+        ctx.lineTo(x + 24, y + 16);
+        ctx.stroke();
+    }
+
     function desenharNuvem(x, y, escala) {
         ctx.save();
         ctx.translate(x, y);
@@ -629,13 +664,13 @@
             estado.modoDia = false;
         }
 
-        estado.velocidade = 4.4 + Math.floor(estado.tempoDecorrido / 45) * 0.7;
+        estado.velocidade = 4.25 + Math.floor(estado.tempoDecorrido / 55) * 0.5;
 
         if (!estado.mensagem5MinAtivada && estado.tempoDecorrido >= MESSAGE_START_SECONDS) {
             estado.mensagem5MinAtivada = true;
             estado.mostrandoMensagem = true;
-            estado.tempoMensagem = IMMUNITY_DURATION_SECONDS;
-            estado.imuneAte = Date.now() + (IMMUNITY_DURATION_SECONDS * 1000);
+            estado.tempoMensagem = MESSAGE_IMMUNITY_DURATION_SECONDS;
+            estado.imuneAte = Date.now() + (MESSAGE_IMMUNITY_DURATION_SECONDS * 1000);
         }
 
         if (estado.mostrandoMensagem) {
@@ -671,8 +706,12 @@
 
         estado.distancia += estado.velocidade;
 
-        const intervaloEscorpiao = 1500 + Math.random() * 900;
-        if (Date.now() - estado.ultimoEscorpiao > intervaloEscorpiao) {
+        const intervaloEscorpiao = estado.modoDia
+            ? 1500 + Math.random() * 900
+            : NIGHT_SCORPION_INTERVAL_MIN_MS + Math.random() * NIGHT_SCORPION_INTERVAL_RANDOM_MS;
+        const podeCriarEscorpiao = estado.modoDia ||
+            Date.now() - estado.ultimoObstaculoVoador > NIGHT_OBSTACLE_GAP_MS;
+        if (Date.now() - estado.ultimoEscorpiao > intervaloEscorpiao && podeCriarEscorpiao) {
             estado.escorpioes.push({
                 x: canvas.width + 70,
                 y: 334,
@@ -683,8 +722,9 @@
         }
 
         if (!estado.modoDia) {
-            const intervaloVoador = 2600 + Math.random() * 1500;
-            if (Date.now() - estado.ultimoObstaculoVoador > intervaloVoador) {
+            const intervaloVoador = NIGHT_BAT_INTERVAL_MIN_MS + Math.random() * NIGHT_BAT_INTERVAL_RANDOM_MS;
+            const podeCriarMorcego = Date.now() - estado.ultimoEscorpiao > NIGHT_OBSTACLE_GAP_MS;
+            if (Date.now() - estado.ultimoObstaculoVoador > intervaloVoador && podeCriarMorcego) {
                 estado.obstaculosVoadores.push({
                     x: canvas.width + 50,
                     y: 195 + Math.random() * 55,
@@ -693,6 +733,17 @@
                 });
                 estado.ultimoObstaculoVoador = Date.now();
             }
+        }
+
+        const intervaloPoder = POWERUP_INTERVAL_MIN_MS + Math.random() * POWERUP_INTERVAL_RANDOM_MS;
+        if (Date.now() - estado.ultimoPoder > intervaloPoder) {
+            estado.poderes.push({
+                x: canvas.width + 60,
+                y: 220 + Math.random() * 45,
+                largura: 28,
+                altura: 28
+            });
+            estado.ultimoPoder = Date.now();
         }
 
         for (let i = estado.escorpioes.length - 1; i >= 0; i--) {
@@ -705,7 +756,7 @@
         }
 
         for (let i = estado.obstaculosVoadores.length - 1; i >= 0; i--) {
-            estado.obstaculosVoadores[i].x -= estado.velocidade * 1.2;
+            estado.obstaculosVoadores[i].x -= estado.velocidade * 1.12;
             if (estado.obstaculosVoadores[i].x < -50) {
                 estado.obstaculosVoadores.splice(i, 1);
                 estado.pontos += 15;
@@ -713,7 +764,21 @@
             }
         }
 
+        for (let i = estado.poderes.length - 1; i >= 0; i--) {
+            estado.poderes[i].x -= estado.velocidade;
+            if (estado.poderes[i].x < -50) {
+                estado.poderes.splice(i, 1);
+            }
+        }
+
         const hitboxJogadora = limitesJogadora();
+        for (let i = estado.poderes.length - 1; i >= 0; i--) {
+            if (colidiu(hitboxJogadora, estado.poderes[i])) {
+                estado.imuneAte = Math.max(estado.imuneAte, Date.now()) + (POWER_IMMUNITY_DURATION_SECONDS * 1000);
+                estado.poderes.splice(i, 1);
+            }
+        }
+
         if (!estaImune()) {
             for (const esc of estado.escorpioes) {
                 if (colidiu(hitboxJogadora, esc)) {
@@ -795,7 +860,7 @@
         ctx.fillStyle = '#FFF';
         ctx.font = 'bold 26px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText('"Estou confusa sobre nos..."', canvas.width / 2, 112);
+        ctx.fillText('"Vale um desejo ou pergunta"', canvas.width / 2, 112);
 
         ctx.font = 'bold 20px Arial';
         ctx.fillText(`Imune por ${Math.ceil(estado.tempoMensagem)}s`, canvas.width / 2, 144);
@@ -811,6 +876,10 @@
 
         for (const obs of estado.obstaculosVoadores) {
             desenharMorcego(obs);
+        }
+
+        for (const poder of estado.poderes) {
+            desenharPoderImunidade(poder);
         }
 
         desenharJogadora();
