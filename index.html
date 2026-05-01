@@ -7,24 +7,26 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="game-container">
-        <canvas id="gameCanvas" width="800" height="400"></canvas>
-        <div id="ui">
-            <div id="score">Pontos: 0</div>
-            <div id="bestScore">Recorde: 0</div>
-            <div id="time">Tempo: 00:00</div>
-            <div id="mode">Modo: Dia</div>
-            <div id="status">Meta: 10:00</div>
-        </div>
-        <div id="gameOver" class="hidden">
-            <h1>GAME OVER</h1>
-            <p>Pressione ESPACO para reiniciar</p>
-        </div>
-        <div id="startScreen">
-            <h1>Jogo da Praia</h1>
-            <p>Pule sobre os escorpioes e desvie dos morcegos!</p>
-            <p>Sobreviva ate 10:00 para vencer.</p>
-            <p>Pressione ESPACO para comecar</p>
+    <div class="game-shell">
+        <div class="game-container">
+            <canvas id="gameCanvas" width="800" height="400"></canvas>
+            <div id="ui">
+                <div id="score">Pontos: 0</div>
+                <div id="bestScore">Recorde: 0</div>
+                <div id="time">Tempo: 00:00</div>
+                <div id="mode">Modo: Dia</div>
+                <div id="status">Meta: 10:00</div>
+            </div>
+            <div id="gameOver" class="hidden">
+                <h1>GAME OVER</h1>
+                <p>Pressione ESPACO para reiniciar</p>
+            </div>
+            <div id="startScreen">
+                <h1>Jogo da Praia</h1>
+                <p>Pule sobre os escorpioes e desvie dos morcegos!</p>
+                <p>Sobreviva ate 10:00 para vencer.</p>
+                <p>Pressione ESPACO para comecar</p>
+            </div>
         </div>
         <div id="mobileControls" class="mobile-controls hidden" aria-label="Controles mobile">
             <button id="jumpButton" type="button">Pular</button>

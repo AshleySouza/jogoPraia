@@ -6,6 +6,7 @@
 
 body {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
@@ -14,9 +15,13 @@ body {
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
+.game-shell {
+    width: min(100%, 800px);
+}
+
 .game-container {
     position: relative;
-    width: min(100%, 800px);
+    width: 100%;
     border-radius: 15px;
     overflow: hidden;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
@@ -90,15 +95,12 @@ body {
 }
 
 .mobile-controls {
-    position: absolute;
-    left: 16px;
-    right: 16px;
-    bottom: 16px;
+    width: 100%;
+    margin-top: 14px;
     display: flex;
     gap: 12px;
     justify-content: space-between;
-    pointer-events: none;
-    z-index: 5;
+    pointer-events: auto;
 }
 
 .mobile-controls button {
@@ -166,10 +168,13 @@ body {
         padding: 12px;
     }
 
+    .game-shell {
+        width: 100%;
+    }
+
     .game-container {
         width: 100%;
         max-width: 100%;
-        overflow: visible;
         border-radius: 18px;
     }
 
@@ -204,12 +209,11 @@ body {
     }
 
     .mobile-controls {
-        position: static;
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 10px;
         margin-top: 12px;
-        pointer-events: auto;
+        width: 100%;
     }
 
     .mobile-controls button {
