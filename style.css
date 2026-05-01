@@ -1,0 +1,202 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 16px;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.game-container {
+    position: relative;
+    width: min(100%, 800px);
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+#gameCanvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    background: #87ceeb;
+}
+
+#ui {
+    position: absolute;
+    top: 10px;
+    left: 15px;
+    right: 15px;
+    z-index: 3;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: space-between;
+    font-size: 18px;
+    font-weight: bold;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+#score,
+#bestScore,
+#time,
+#mode,
+#status {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 8px 15px;
+    border-radius: 20px;
+}
+
+#gameOver,
+#startScreen {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    text-align: center;
+    padding: 24px;
+    z-index: 4;
+}
+
+#gameOver h1 {
+    font-size: 48px;
+    color: #ff4757;
+    margin-bottom: 20px;
+    text-shadow: 3px 3px 0 #fff;
+}
+
+#gameOver p,
+#startScreen p {
+    font-size: 20px;
+    margin: 10px 0;
+}
+
+#startScreen h1 {
+    font-size: 42px;
+    margin-bottom: 20px;
+    color: #ffd700;
+}
+
+.mobile-controls {
+    position: absolute;
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+    pointer-events: none;
+    z-index: 5;
+}
+
+.mobile-controls button {
+    flex: 1;
+    border: 0;
+    border-radius: 24px;
+    padding: 18px 18px;
+    min-height: 72px;
+    font-size: 21px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.4px;
+    background: linear-gradient(180deg, rgba(23, 78, 125, 0.96) 0%, rgba(8, 39, 75, 0.96) 100%);
+    border: 2px solid rgba(255, 255, 255, 0.28);
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.32);
+    pointer-events: auto;
+    touch-action: manipulation;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
+}
+
+#jumpButton {
+    background: linear-gradient(180deg, rgba(255, 148, 77, 0.98) 0%, rgba(219, 88, 41, 0.98) 100%);
+}
+
+#duckButton {
+    background: linear-gradient(180deg, rgba(31, 126, 148, 0.98) 0%, rgba(14, 77, 112, 0.98) 100%);
+}
+
+.mobile-controls button::before {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    opacity: 0.78;
+}
+
+#jumpButton::before {
+    content: "TOQUE";
+}
+
+#duckButton::before {
+    content: "SEGURE";
+}
+
+.mobile-controls button:hover {
+    filter: brightness(1.05);
+}
+
+.mobile-controls button:active {
+    transform: translateY(2px) scale(0.985);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.26);
+}
+
+.hidden {
+    display: none !important;
+}
+
+@media (max-width: 768px) {
+    body {
+        align-items: flex-start;
+    }
+
+    #ui {
+        font-size: 14px;
+    }
+
+    #gameOver h1,
+    #startScreen h1 {
+        font-size: 32px;
+    }
+
+    #gameOver p,
+    #startScreen p {
+        font-size: 16px;
+    }
+
+    .mobile-controls {
+        display: flex;
+        left: 12px;
+        right: 12px;
+        bottom: 12px;
+        gap: 10px;
+    }
+
+    .mobile-controls button {
+        min-height: 68px;
+        font-size: 19px;
+        opacity: 0.92;
+    }
+}
+
+@media (max-width: 480px) {
+    .mobile-controls button {
+        min-height: 64px;
+        padding: 16px 14px;
+        font-size: 18px;
+    }
+}
