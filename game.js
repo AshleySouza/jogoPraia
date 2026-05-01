@@ -828,11 +828,16 @@
         const mediaAtiva = typeof window.matchMedia === 'function'
             ? window.matchMedia('(max-width: 768px)').matches
             : false;
+        const ponteiroGrosso = typeof window.matchMedia === 'function' && (
+            window.matchMedia('(pointer: coarse)').matches ||
+            window.matchMedia('(any-pointer: coarse)').matches
+        );
+        const navegador = typeof window !== 'undefined' ? window.navigator : undefined;
         const toqueAtivo = typeof window !== 'undefined' && (
             'ontouchstart' in window ||
-            (typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0)
+            (navegador && typeof navegador.maxTouchPoints === 'number' && navegador.maxTouchPoints > 0)
         );
-        return mediaAtiva || toqueAtivo;
+        return mediaAtiva || ponteiroGrosso || toqueAtivo;
     }
 
     function atualizarVisibilidadeControles() {
